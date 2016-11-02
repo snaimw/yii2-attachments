@@ -25,6 +25,8 @@ class AttachmentsInput extends Widget
 
     public $model;
 
+    public $attribute = 'main';
+
     public $pluginOptions = [];
 
     public $options = [];
@@ -37,12 +39,12 @@ class AttachmentsInput extends Widget
             throw new InvalidConfigException("Property {model} cannot be blank");
         }
 
-        FileHelper::removeDirectory($this->getModule()->getUserDirPath()); // Delete all uploaded files in past
+        FileHelper::removeDirectory($this->getModule()->getUserDirPath($this->attribute)); // Delete all uploaded files in past
 
         $this->pluginOptions = array_replace($this->pluginOptions, [
             'uploadUrl' => Url::toRoute('/attachments/file/upload'),
-            'initialPreview' => $this->model->isNewRecord ? [] : $this->model->getInitialPreview(),
-            'initialPreviewConfig' => $this->model->isNewRecord ? [] : $this->model->getInitialPreviewConfig(),
+            'initialPreview' => $this->model->isNewRecord ? [] : $this->model->getInitialPreview($this->attribute),
+            'initialPreviewConfig' => $this->model->isNewRecord ? [] : $this->model->getInitialPreviewConfig($this->attribute),
             'uploadAsync' => false
         ]);
 
@@ -98,9 +100,10 @@ JS;
 
     public function run()
     {
+        $this->pluginOptions['uploadExtraData']['attribute'] = $this->attribute;
         $fileinput = FileInput::widget([
             'model' => new UploadForm(),
-            'attribute' => 'file[]',
+            'attribute' => "file[$this->attribute][]",
             'options' => $this->options,
             'pluginOptions' => $this->pluginOptions
         ]);

@@ -19,7 +19,7 @@ class FileController extends Controller
     {
         $model = new UploadForm();
         $model->file = UploadedFile::getInstances($model, 'file');
-
+        $attribute = $_POST['attribute'];
         if ($model->rules()[0]['maxFiles'] == 1 && sizeof($model->file) == 1) {
             $model->file = $model->file[0];
         }
@@ -28,12 +28,12 @@ class FileController extends Controller
             $result['uploadedFiles'] = [];
             if (is_array($model->file)) {
                 foreach ($model->file as $file) {
-                    $path = $this->getModule()->getUserDirPath() . DIRECTORY_SEPARATOR . $file->name;
+                    $path = $this->getModule()->getUserDirPath($attribute) . DIRECTORY_SEPARATOR . $file->name;
                     $file->saveAs($path);
                     $result['uploadedFiles'][] = $file->name;
                 }
             } else {
-                $path = $this->getModule()->getUserDirPath() . DIRECTORY_SEPARATOR . $model->file->name;
+                $path = $this->getModule()->getUserDirPath($attribute) . DIRECTORY_SEPARATOR . $model->file->name;
                 $model->file->saveAs($path);
                 $result['uploadedFiles'][] = $model->file->name;
             }

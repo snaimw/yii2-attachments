@@ -21,6 +21,8 @@ class FileBehavior extends Behavior
 {
     use ModuleTrait;
 
+    public $attributes = ['main'];
+
     public function events()
     {
         return [
@@ -36,19 +38,21 @@ class FileBehavior extends Behavior
 
         if (!empty($files)) {
             foreach ($files as $file) {
-                if (!$file->saveAs($this->getModule()->getUserDirPath() . $file->name)) {
+                if (!$file->saveAs($this->getModule()->getUserDirPath($this->attribute) . $file->name)) {
                     throw new \Exception(\Yii::t('yii', 'File upload failed.'));
                 }
             }
         }
 
-        $userTempDir = $this->getModule()->getUserDirPath();
-        foreach (FileHelper::findFiles($userTempDir) as $file) {
-            if (!$this->getModule()->attachFile($file, $this->owner)) {
-                throw new \Exception(\Yii::t('yii', 'File upload failed.'));
+        foreach ($this->attributes as $attribute){
+            $userTempDir = $this->getModule()->getUserDirPath($attribute);
+            foreach (FileHelper::findFiles($userTempDir) as $file) {
+                if (!$this->getModule()->attachFile($file, $this->owner, $attribute)) {
+                    throw new \Exception(\Yii::t('yii', 'File upload failed.'));
+                }
             }
+            rmdir($userTempDir);
         }
-        rmdir($userTempDir);
     }
 
     public function deleteUploads($event)
@@ -62,11 +66,12 @@ class FileBehavior extends Behavior
      * @return File[]
      * @throws \Exception
      */
-    public function getFiles()
+    public function getFiles($attribute)
     {
         $fileQuery = File::find()
             ->where([
                 'itemId' => $this->owner->id,
+                'attribute' => $attribute,
                 'model' => $this->getModule()->getShortClass($this->owner)
             ]);
         $fileQuery->orderBy(['id' => SORT_ASC]);
@@ -74,11 +79,11 @@ class FileBehavior extends Behavior
         return $fileQuery->all();
     }
 
-    public function getInitialPreview()
+    public function getInitialPreview($attribute)
     {
         $initialPreview = [];
 
-        $userTempDir = $this->getModule()->getUserDirPath();
+        $userTempDir = $this->getModule()->getUserDirPath($attribute);
         foreach (FileHelper::findFiles($userTempDir) as $file) {
             if (substr(FileHelper::getMimeType($file), 0, 5) === 'image') {
                 $initialPreview[] = Html::img(['/attachments/file/download-temp', 'filename' => basename($file)], ['class' => 'file-preview-image']);
@@ -91,7 +96,7 @@ class FileBehavior extends Behavior
             }
         }
 
-        foreach ($this->getFiles() as $file) {
+        foreach ($this->getFiles($attribute) as $file) {
             if (substr($file->mime, 0, 5) === 'image') {
                 $initialPreview[] = Html::img($file->getUrl(), ['class' => 'file-preview-image']);
             } else {
@@ -106,11 +111,11 @@ class FileBehavior extends Behavior
         return $initialPreview;
     }
 
-    public function getInitialPreviewConfig()
+    public function getInitialPreviewConfig($attribute)
     {
         $initialPreviewConfig = [];
 
-        $userTempDir = $this->getModule()->getUserDirPath();
+        $userTempDir = $this->getModule()->getUserDirPath($attribute);
         foreach (FileHelper::findFiles($userTempDir) as $file) {
             $filename = basename($file);
             $initialPreviewConfig[] = [
@@ -121,7 +126,7 @@ class FileBehavior extends Behavior
             ];
         }
 
-        foreach ($this->getFiles() as $index => $file) {
+        foreach ($this->getFiles($attribute) as $index => $file) {
             $initialPreviewConfig[] = [
                 'caption' => "$file->name.$file->type",
                 'url' => Url::toRoute(['/attachments/file/delete',

@@ -12,6 +12,7 @@ class m150127_040544_add_attachments extends Migration
         $this->createTable($this->getModule()->tableName, [
             'id' => Schema::TYPE_PK,
             'name' => Schema::TYPE_STRING . ' not null',
+            'attribute' => Schema::TYPE_STRING . ' not null',
             'model' => Schema::TYPE_STRING . ' not null',
             'itemId' => Schema::TYPE_INTEGER . ' not null',
             'hash' => Schema::TYPE_STRING . ' not null',

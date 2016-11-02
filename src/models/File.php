@@ -12,6 +12,7 @@ use yii\helpers\Url;
  *
  * @property integer $id
  * @property string $name
+ * @property string $attribute
  * @property string $model
  * @property integer $itemId
  * @property string $hash

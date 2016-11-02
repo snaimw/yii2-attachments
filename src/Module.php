@@ -38,7 +38,7 @@ class Module extends \yii\base\Module
         \Yii::$app->i18n->translations['nemmo/*'] = [
             'class' => PhpMessageSource::className(),
             'sourceLanguage' => 'en',
-            'basePath' => '@vendor/nemmo/yii2-attachments/src/messages',
+            'basePath' => '@vendor/nemmo/yii2-attachments/messages',
             'fileMap' => [
                 'nemmo/attachments' => 'attachments.php'
             ],
@@ -87,11 +87,11 @@ class Module extends \yii\base\Module
         return $path;
     }
 
-    public function getUserDirPath()
+    public function getUserDirPath($attribute)
     {
         \Yii::$app->session->open();
 
-        $userDirPath = $this->getTempPath() . DIRECTORY_SEPARATOR . \Yii::$app->session->id;
+        $userDirPath = $this->getTempPath() . DIRECTORY_SEPARATOR . \Yii::$app->session->id . DIRECTORY_SEPARATOR . "$attribute";
         FileHelper::createDirectory($userDirPath);
 
         \Yii::$app->session->close();
@@ -115,7 +115,7 @@ class Module extends \yii\base\Module
      * @throws Exception
      * @throws \yii\base\InvalidConfigException
      */
-    public function attachFile($filePath, $owner)
+    public function attachFile($filePath, $owner, $attribute)
     {
         if (empty($owner->id)) {
             throw new Exception('Parent model must have ID when you attaching a file');
@@ -136,6 +136,7 @@ class Module extends \yii\base\Module
 
         $file = new File();
         $file->name = pathinfo($filePath, PATHINFO_FILENAME);
+        $file->attribute =  $attribute;
         $file->model = $this->getShortClass($owner);
         $file->itemId = $owner->id;
         $file->hash = $fileHash;
@@ -157,9 +158,7 @@ class Module extends \yii\base\Module
         $file = File::findOne(['id' => $id]);
         if (empty($file)) return false;
         $filePath = $this->getFilesDirPath($file->hash) . DIRECTORY_SEPARATOR . $file->hash . '.' . $file->type;
-        
-        // this is the important part of the override.
-        // the original methods doesn't check for file_exists to be 
-        return file_exists($filePath) ? unlink($filePath) && $file->delete() : $file->delete();
+
+        return unlink($filePath) && $file->delete();
     }
 }

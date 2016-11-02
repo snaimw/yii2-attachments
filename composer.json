@@ -10,10 +10,10 @@
     "upload"
   ],
   "license": "BSD-4-Clause",
-  "homepage": "https://github.com/Nemmo/yii2-attachments",
+  "homepage": "https://github.com/nemmo/yii2-attachments",
   "authors": [
     {
-      "name": "Alimzhan Abuov aka Nemmo",
+      "name": "Alimzhan Abuov aka nemmo",
       "email": "alimzhan.abu@yandex.kz",
       "homepage": "http://alimzhan.kz",
       "role": "Developer"
