@@ -17,9 +17,10 @@ class FileController extends Controller
 
     public function actionUpload()
     {
-        $model = new UploadForm();
-        $model->file = UploadedFile::getInstances($model, 'file');
         $attribute = $_POST['attribute'];
+        $model = new UploadForm();
+        $model->file = UploadedFile::getInstances($model, "file[$attribute]");
+
         if ($model->rules()[0]['maxFiles'] == 1 && sizeof($model->file) == 1) {
             $model->file = $model->file[0];
         }

@@ -52,45 +52,45 @@ class AttachmentsInput extends Widget
             'id' => $this->id,
             //'multiple' => true
         ]);
-
+        $pref = '_' . $this->attribute;
         $js = <<<JS
-var fileInput = $('#file-input');
-var form = fileInput.closest('form');
-var filesUploaded = false;
-var filesToUpload = 0;
-var uploadButtonClicked = false;
+var fileInput$pref = $('#file-input$pref');
+var form$pref = fileInput$pref.closest('form');
+var filesUploaded$pref = false;
+var filesToUpload$pref = 0;
+var uploadButtonClicked$pref = false;
 //var formSubmit = false;
-form.on('beforeSubmit', function(event) { // form submit event
+form$pref.on('beforeSubmit', function(event) { // form submit event
     console.log('submit');
-    if (!filesUploaded && filesToUpload) {
+    if (!filesUploaded$pref && filesToUpload$pref) {
         console.log('upload');
-        $('#file-input').fileinput('upload').fileinput('lock');
+        $('#file-input$pref').fileinput('upload').fileinput('lock');
 
         return false;
     }
 });
 
-fileInput.on('filebatchpreupload', function(event, data, previewId, index) {
-    uploadButtonClicked = true;
+fileInput$pref.on('filebatchpreupload', function(event, data, previewId, index) {
+    uploadButtonClicked$pref = true;
 });
 
 //fileInput.on('filebatchuploadcomplete', function(event, files, extra) { // all files successfully uploaded
-fileInput.on('filebatchuploadsuccess', function(event, data, previewId, index) {
+fileInput$pref.on('filebatchuploadsuccess', function(event, data, previewId, index) {
     filesUploaded = true;
-    $('#file-input').fileinput('unlock');
-    if (uploadButtonClicked) {
-        form.submit();
+    $('#file-input$pref').fileinput('unlock');
+    if (uploadButtonClicked$pref) {
+        form$pref.submit();
     } else {
-        uploadButtonClicked = false;
+        uploadButtonClicked$pref = false;
     }
 });
 
-fileInput.on('filebatchselected', function(event, files) { // there are some files to upload
-    filesToUpload = files.length
+fileInput$pref.on('filebatchselected', function(event, files) { // there are some files to upload
+    filesToUpload$pref = files.length
 });
 
-fileInput.on('filecleared', function(event) { // no files to upload
-    filesToUpload = 0;
+fileInput$pref.on('filecleared', function(event) { // no files to upload
+    filesToUpload$pref = 0;
 });
 
 JS;
@@ -101,7 +101,9 @@ JS;
     public function run()
     {
         $this->pluginOptions['uploadExtraData']['attribute'] = $this->attribute;
+        $this->options['id'] = 'file-input_' . $this->attribute;
         $fileinput = FileInput::widget([
+            'id' => $this->attribute,
             'model' => new UploadForm(),
             'attribute' => "file[$this->attribute][]",
             'options' => $this->options,

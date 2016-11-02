@@ -34,17 +34,19 @@ class FileBehavior extends Behavior
 
     public function saveUploads($event)
     {
-        $files = UploadedFile::getInstancesByName('UploadForm[file]');
+        foreach ($this->attributes as $attribute) {
+            $files = UploadedFile::getInstancesByName("UploadForm[file][$attribute]");
 
-        if (!empty($files)) {
-            foreach ($files as $file) {
-                if (!$file->saveAs($this->getModule()->getUserDirPath($this->attribute) . $file->name)) {
-                    throw new \Exception(\Yii::t('yii', 'File upload failed.'));
+            if (!empty($files)) {
+                foreach ($files as $file) {
+                    if (!$file->saveAs($this->getModule()->getUserDirPath($this->attribute) . $file->name)) {
+                        throw new \Exception(\Yii::t('yii', 'File upload failed.'));
+                    }
                 }
             }
         }
 
-        foreach ($this->attributes as $attribute){
+        foreach ($this->attributes as $attribute) {
             $userTempDir = $this->getModule()->getUserDirPath($attribute);
             foreach (FileHelper::findFiles($userTempDir) as $file) {
                 if (!$this->getModule()->attachFile($file, $this->owner, $attribute)) {
