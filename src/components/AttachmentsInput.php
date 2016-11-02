@@ -64,8 +64,9 @@ form$pref.on('beforeSubmit', function(event) { // form submit event
     console.log('submit');
     if (!filesUploaded$pref && filesToUpload$pref) {
         console.log('upload');
-        $('#file-input$pref').fileinput('upload').fileinput('lock');
-
+        $('#file-input$pref').fileinput('upload');
+        $('#file-input$pref').fileinput('lock');
+        filesToUpload$pref = 0;
         return false;
     }
 });
