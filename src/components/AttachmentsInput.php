@@ -52,7 +52,7 @@ class AttachmentsInput extends Widget
             'id' => $this->id,
             //'multiple' => true
         ]);
-        $pref = '_' . $this->attribute;
+        $pref = '_' . $this->attribute . '_' . str_replace('-', '_', $this->id);
         $js = <<<JS
 var fileInput$pref = $('#file-input$pref');
 var form$pref = fileInput$pref.closest('form');
@@ -102,9 +102,9 @@ JS;
     public function run()
     {
         $this->pluginOptions['uploadExtraData']['attribute'] = $this->attribute;
-        $this->options['id'] = 'file-input_' . $this->attribute;
+        $this->options['id'] = 'file-input_' . $this->attribute . '_' . str_replace('-', '_', $this->id);
         $fileinput = FileInput::widget([
-            'id' => $this->attribute,
+            'id' => $this->attribute . '_' . str_replace('-', '_', $this->id),
             'model' => new UploadForm(),
             'attribute' => "file[$this->attribute][]",
             'options' => $this->options,

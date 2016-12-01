@@ -21,7 +21,7 @@ class FileBehavior extends Behavior
 {
     use ModuleTrait;
 
-    public $attributes = ['main'];
+    public $attributes = ['main' => ['count' => 1]];
 
     public function events()
     {
@@ -34,21 +34,29 @@ class FileBehavior extends Behavior
 
     public function saveUploads($event)
     {
-        foreach ($this->attributes as $attribute) {
+        foreach ($this->attributes as $attribute => $data) {
             $files = UploadedFile::getInstancesByName("UploadForm[file][$attribute]");
 
             if (!empty($files)) {
+
+                if ($data['replace']) $this->deleteUploadsByAttribute($attribute);
+
                 foreach ($files as $file) {
-                    if (!$file->saveAs($this->getModule()->getUserDirPath($this->attribute) . $file->name)) {
+                    if (!$file->saveAs($this->getModule()->getUserDirPath($attribute) . $file->name)) {
                         throw new \Exception(\Yii::t('yii', 'File upload failed.'));
                     }
                 }
             }
         }
 
-        foreach ($this->attributes as $attribute) {
+        foreach ($this->attributes as $attribute => $data) {
             $userTempDir = $this->getModule()->getUserDirPath($attribute);
-            foreach (FileHelper::findFiles($userTempDir) as $file) {
+            $files = FileHelper::findFiles($userTempDir);
+            if (!empty($files)) {
+                if ($data['replace']) $this->deleteUploadsByAttribute($attribute);
+            }
+            
+            foreach ($files as $file) {
                 if (!$this->getModule()->attachFile($file, $this->owner, $attribute)) {
                     throw new \Exception(\Yii::t('yii', 'File upload failed.'));
                 }
@@ -64,21 +72,55 @@ class FileBehavior extends Behavior
         }
     }
 
+    public function deleteUploadsByAttribute($attribute)
+    {
+        foreach ($this->getFiles($attribute) as $file) {
+            $this->getModule()->detachFile($file->id);
+        }
+    }
+
     /**
      * @return File[]
      * @throws \Exception
      */
-    public function getFiles($attribute)
+    public function getFiles($attribute = false)
     {
+        $condition = [
+            'itemId' => $this->owner->id,
+            'model' => $this->getModule()->getShortClass($this->owner)
+        ];
+
+        if ($attribute) {
+            $condition['attribute'] = $attribute;
+        }
+
         $fileQuery = File::find()
-            ->where([
-                'itemId' => $this->owner->id,
-                'attribute' => $attribute,
-                'model' => $this->getModule()->getShortClass($this->owner)
-            ]);
+            ->where($condition);
         $fileQuery->orderBy(['id' => SORT_ASC]);
 
         return $fileQuery->all();
+    }
+
+    /**
+     * @return File
+     * @throws \Exception
+     */
+    public function getFile($attribute = false)
+    {
+        $condition = [
+            'itemId' => $this->owner->id,
+            'model' => $this->getModule()->getShortClass($this->owner)
+        ];
+
+        if ($attribute) {
+            $condition['attribute'] = $attribute;
+        }
+
+        $fileQuery = File::find()
+            ->where($condition);
+        $fileQuery->orderBy(['id' => SORT_ASC]);
+
+        return $fileQuery->one();
     }
 
     public function getInitialPreview($attribute)

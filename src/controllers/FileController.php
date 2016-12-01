@@ -76,9 +76,9 @@ class FileController extends Controller
     {
         $userTempDir = $this->getModule()->getUserDirPath();
         $filePath = $userTempDir . DIRECTORY_SEPARATOR . $filename;
-        unlink($filePath);
+        @unlink($filePath);
         if (!sizeof(FileHelper::findFiles($userTempDir))) {
-            rmdir($userTempDir);
+            @rmdir($userTempDir);
         }
 
         Yii::$app->response->format = Response::FORMAT_JSON;

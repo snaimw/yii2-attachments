@@ -14,6 +14,8 @@ class Module extends \yii\base\Module
 
     public $storePath = '@app/uploads/store';
 
+    public $directStorePath = '/uploads/store';
+
     public $tempPath = '@app/uploads/temp';
 
     public $rules = [];
@@ -55,6 +57,11 @@ class Module extends \yii\base\Module
         return \Yii::getAlias($this->storePath);
     }
 
+    public function getDirectStorePath()
+    {
+        return \Yii::getAlias($this->directStorePath);
+    }
+
     public function getTempPath()
     {
         return \Yii::getAlias($this->tempPath);
@@ -67,6 +74,19 @@ class Module extends \yii\base\Module
     public function getFilesDirPath($fileHash)
     {
         $path = $this->getStorePath() . DIRECTORY_SEPARATOR . $this->getSubDirs($fileHash);
+
+        FileHelper::createDirectory($path);
+
+        return $path;
+    }
+
+    /**
+     * @param $fileHash
+     * @return string
+     */
+    public function getDirectFilesDirPath($fileHash)
+    {
+        $path = $this->getDirectStorePath() . DIRECTORY_SEPARATOR . $this->getSubDirs($fileHash);
 
         FileHelper::createDirectory($path);
 
@@ -159,6 +179,6 @@ class Module extends \yii\base\Module
         if (empty($file)) return false;
         $filePath = $this->getFilesDirPath($file->hash) . DIRECTORY_SEPARATOR . $file->hash . '.' . $file->type;
 
-        return unlink($filePath) && $file->delete();
+        return @unlink($filePath) && $file->delete();
     }
 }
